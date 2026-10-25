@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Projects growth model</title>
+<style>
+:root{--ink:#1d1d1f;--muted:#55555c;--line:#e4e2dd;--bg:#f9f9f7;--card:#fff;--accent:#2f5d50;--good:#1f7a3f;--warnc:#a5670b;--bad:#b3261e;--soft:#eef5f2}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:normal;margin:0 0 .35em}
+h1{font-size:32px}h2{font-size:23px}h3{font-size:15px;margin:0 0 8px}
+.wrap{max-width:1300px;margin:0 auto;padding:28px 24px 80px}
+.lede{color:var(--muted);font-size:16.5px;max-width:880px;margin:0}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:18px;flex-wrap:wrap;font-size:14px;margin:14px 0 18px;padding:10px 0;border-bottom:1px solid var(--line)}
+nav a{color:var(--muted);text-decoration:none}nav a:hover{color:var(--accent)}
+section{margin:34px 0;scroll-margin-top:56px}
+.sub{color:var(--muted);font-size:14px;margin:-4px 0 12px;max-width:900px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px}
+.bar .sp{flex:1}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:14px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px}
+.kpi .v{font-family:Georgia,serif;font-size:25px;line-height:1.2}.kpi .l{font-size:12.5px;color:var(--muted)}
+.kpi.big{border-color:var(--accent)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:15px}
+.flow b{font-family:Georgia,serif;font-size:19px;font-weight:normal}
+.flow .ar{color:var(--muted);padding:0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;border-bottom:1px solid var(--line);padding:6px 6px;vertical-align:bottom}
+td{padding:6px 6px;border-bottom:1px solid #f0eee9;vertical-align:middle}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.off td{opacity:.5}
+tr.weeds>td{background:#fbfbf9;padding:12px 14px 14px}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 26px}
+input[type=number],input[type=text],select{padding:4px 6px;border:1px solid #cfccc5;border-radius:6px;font:inherit;font-size:13.5px;background:#fff}
+input[type=number]{width:96px}input.w{width:220px}
+.btn{border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:6px;padding:4px 11px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--soft)}.btn.on{background:var(--accent);color:#fff}
+.btn.solid{background:var(--accent);color:#fff}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px}
+.f{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:5px 0;font-size:13.5px}
+.f span.s{display:block;font-size:11px;color:var(--muted)}
+.note{font-size:13px;color:var(--muted)}
+.pos{color:var(--good)}.mid{color:var(--warnc)}.neg{color:var(--bad)}
+.pill{display:inline-block;white-space:nowrap;border-radius:999px;padding:1px 8px;font-size:12px;background:#f1efe9;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+/* month grid */
+table.mg{font-size:12.5px;width:auto;min-width:100%}
+table.mg th,table.mg td{padding:3px 3px;white-space:nowrap}
+table.mg td:first-child,table.mg th:first-child{position:sticky;left:0;background:#fff;z-index:1;min-width:230px;max-width:260px;white-space:normal}
+table.mg input[type=number]{width:64px;font-size:12.5px;padding:3px 4px}
+table.mg input[type=text]{width:64px;font-size:12px;padding:3px 4px}
+table.mg tr.hd td{background:#f6f5f1;font-weight:600;color:var(--muted);font-size:12px}
+table.mg tr.calc td{color:var(--muted)}
+table.mg tr.key td{font-weight:600;color:var(--ink)}
+.months{display:grid;grid-template-columns:repeat(var(--n),1fr);font-size:11px;color:var(--muted);text-align:center}
+.lane{position:relative;height:30px;margin:4px 0}
+.band{position:absolute;top:0;height:28px;border-radius:6px;font-size:12px;padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.mk{position:absolute;top:2px;transform:translateX(-50%);font-size:11.5px;background:#fff;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.be{position:absolute;top:0;bottom:0;border-left:2px dashed var(--good)}
+.warn{border-left:3px solid var(--accent);background:var(--soft);padding:8px 14px;border-radius:0 8px 8px 0;font-size:14px;margin:8px 0}
+.fix li{margin:6px 0}
+ul.tight{margin:6px 0;padding-left:20px}ul.tight li{margin:4px 0}
+details summary{cursor:pointer;color:var(--accent);font-size:14px}
+@media(max-width:1000px){.kpis{grid-template-columns:1fr 1fr}.grid3,.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Home Projects growth model</h1>
+<p class="lede">Where sign-ups come from and what they cost, how many pay, and what a payer is worth. The top shows the answer; click <b>Edit</b> on any row to change the details underneath. Plan spend month by month, save scenarios, and enter your real numbers to see what to fix.</p>
+<nav><a href="#top">Top numbers</a><a href="#leads">1 · Lead sources</a><a href="#plans">2 · Plans and value</a><a href="#monthly">3 · Month by month</a><a href="#costs">4 · Costs to maintain</a><a href="#other">5 · Other income</a><a href="#real">6 · Real numbers</a><a href="#chart">Profit chart</a><a href="#notes">How it works</a></nav>
+
+<div class="bar" id="scenBar"></div>
+
+<section id="top" style="margin-top:18px"><h2>Top numbers <span class="pill">whole roadmap</span></h2>
+<div class="flow" id="flow"></div>
+<div class="kpis" id="kpis"></div>
+<p class="note" id="kpiNote"></p>
+</section>
+
+<section id="leads"><h2>1 · Lead sources</h2>
+<p class="sub">Each channel's cost per sign-up, sign-ups per $100, cost per paying user and return on each dollar. Set a target cost per sign-up and the last column shows what has to change to hit it. Spend per month is set in section 3.</p>
+<div class="card scroll"><div class="f" style="justify-content:flex-start;gap:14px;margin:0 0 10px"><label>Target cost per sign-up, $</label><span id="tgtBox"></span><label style="margin-left:18px">Healthy return (value ÷ cost)</label><span id="ratioBox"></span></div>
+<table id="chTable"></table>
+<p style="margin:10px 0 0"><button class="btn" id="addChan">+ Add lead source</button> <select id="addKind"></select></p>
+<p class="note">Sign-ups here are before referrals. <b>Cost per paying user</b> = cost per sign-up ÷ the share of sign-ups who buy a plan (section 2). <b>Return</b> = what a sign-up is worth ÷ what it costs. 3× or more is healthy; under 1× loses money on every sign-up.</p></div>
+</section>
+
+<section id="plans"><h2>2 · Plans and what a sign-up is worth</h2>
+<p class="sub">Conversion = the share of new sign-ups who buy that plan. Lifetime value per buyer = what you keep per sale × how long they stay (monthly) or how many times they buy (one-time). Value per sign-up adds it all up, because most sign-ups never pay.</p>
+<div class="card scroll"><table id="plTable"></table>
+<p style="margin:10px 0 0"><button class="btn" id="addPlan">+ Add plan or feature</button></p></div>
+<div class="card"><h3>What one sign-up is worth</h3><table id="valTable"></table></div>
+</section>
+
+<section id="monthly"><h2>3 · Month by month</h2>
+<p class="sub">Your spend on each lead source and each running cost, month by month. With <b>"Change later months too"</b> on, typing a number fills every month after it, so a change in month 6 carries forward. Turn it off to change one month only. The stage row names each stretch on the roadmap.</p>
+<div class="card"><div id="roadTrack"></div></div>
+<div class="card scroll"><div class="f" style="justify-content:flex-start;gap:16px;margin:0 0 8px"><label><input type="checkbox" id="fwd"> Change later months too</label><label>Months in the plan <span id="monthsBox"></span></label></div><table class="mg" id="mGrid"></table></div>
+</section>
+
+<section id="costs"><h2>4 · Costs to maintain</h2>
+<p class="sub">Monthly running costs are rows in the month-by-month table. Add one for each tool or bill. The settings below set what free users and payments cost.</p>
+<div class="grid2"><div class="card"><h3>Running cost lines</h3><table id="costTable"></table><p style="margin:10px 0 0"><button class="btn" id="addCost">+ Add running cost</button></p></div>
+<div class="card" id="setBox"></div></div>
+</section>
+
+<section id="other"><h2>5 · Other income</h2>
+<div class="grid2" id="otherBox"></div>
+</section>
+
+<section id="real"><h2>6 · Real numbers</h2>
+<p class="sub">Type what actually happened each month (from Meta Ads, Google Ads, creator links, your sign-up table and Stripe/Whop). Leave a month blank until you have it. The comparison shows where reality differs from the plan, and <b>Use real rate</b> updates the model to match.</p>
+<div class="card scroll"><table class="mg" id="aGrid"></table></div>
+<div class="grid2"><div class="card"><h3>Plan vs real</h3><div id="cmp"></div></div><div class="card"><h3>What to fix first</h3><div id="fix"></div></div></div>
+</section>
+
+<section id="chart"><h2>Profit by month</h2>
+<div class="card"><svg id="svg" width="100%" height="300" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+<p class="note">Bars: monthly profit (green above water, red below). Line: active users (right scale). Break-even is the first month profit turns positive and stays there.</p></div>
+</section>
+
+<section id="notes"><h2>How it works</h2>
+<div class="card" style="font-size:14px">
+<p><b>Sign-ups</b> each month come from every lead source that's on and past its start month, × (1 + referrals per user). <b>Active users</b> = last month's minus the ones who finish (1 ÷ months a user stays) plus new sign-ups.</p>
+<p><b>Lead source types</b>: <i>Views</i> (your reels) = views ÷ 1,000 × sign-ups per 1,000 views, with views growing to a cap. <i>Search</i> (SEO) = visits × visit-to-sign-up %. <i>Creators</i> = creators × views ÷ 1,000 × sign-ups per 1,000; cost = creators × base pay + views ÷ 1,000 × view bonus. <i>Impressions</i> (Meta, TikTok) = spend ÷ CPM × 1,000 × click-through × landing sign-up. <i>Clicks</i> (Google) = spend ÷ CPC × click-to-sign-up. <i>Pay per sign-up</i> = spend ÷ price per sign-up. <i>Fixed</i> (in person, email) = a set number of sign-ups each month.</p>
+<p><b>Plans</b>: buyers = new sign-ups × conversion. In a plan's launch month it can also sell to everyone already active (setting in section 4). Monthly subscribers stay until they cancel; average stay = 1 ÷ monthly churn. You keep = price − payment fees (web or App Store) − renders × render price − other cost per sale.</p>
+<p><b>Value per sign-up</b> = Σ (conversion × lifetime value per buyer) + materials commissions per user − what a free user costs you over their stay. <b>Value per paying user</b> = plan value per sign-up ÷ share who pay. <b>Return</b> = value per sign-up ÷ cost per sign-up (the same as payer value ÷ cost per payer).</p>
+<p><b>What it takes</b>: cost per sign-up moves in proportion to the main rate of each source (landing sign-up %, click-to-sign-up %, sign-ups per 1,000 views), so the needed rate = today's rate × today's cost ÷ target cost.</p>
+<h3 style="margin-top:14px">What I changed from Grok's assessment</h3>
+<ul class="tight">
+<li><b>10% of sign-ups pay → about 2 to 3%.</b> Freemium apps convert a median 2.1% of downloads to paid in 35 days (2.6% in North America). AI apps convert 2.4% (RevenueCat State of Subscription Apps 2026). 10% is what hard-paywall apps get (10.7%). Set that if you put the design tool behind a paywall from the first render.</li>
+<li><b>10% monthly churn → 20%.</b> Monthly plans keep only about 7 to 9% of subscribers after a year, and AI apps' monthly plans retain 36% worse than other apps (RevenueCat 2026). Projects also end, so people cancel when the deck is built.</li>
+<li><b>LTV of $80 per Design payer → about $40.</b> Same $9.99 to $14.99 price, but at 20% churn and after renders and fees. With CAC per payer at 2% conversion, UGC is close to break-even, not 8:1.</li>
+<li><b>Google ads cost more here.</b> Home &amp; Home Improvement clicks average $7.85 (WordStream 2025), among the highest of any industry.</li>
+</ul>
+<p class="note">Kept from Grok: your UGC deal ($500 base, $1.50 per 1,000 views, 2 sign-ups per 1,000 views), the plan structure (small-item pack, Design Plus, Build Project Pass, Pro), the render guardrails, and contractor leads later at $15 to $60.</p>
+
+<p><b>Sources for defaults</b>: Google Gemini API pricing page (Nano Banana 2.1 at 1K $0.0336/image standard, $0.0168 batch; Nano Banana 2 at 1K $0.067; checked 24 Oct 2026). fal FLUX.1 Kontext pro $0.04/image. RevenueCat State of Subscription Apps 2026 (freemium 2.1% download-to-paid; AI apps 2.4%; hard paywall 10.7%; monthly retention after a year ~7 to 9%; AI monthly plans retain 36% worse). WordStream 2025 Google Ads benchmarks (Home &amp; Home Improvement CPC $7.85, conversion 7.33%, cost per lead $90.92). Houzz &amp; Home Study 2026 (median spend $20,000; 37% over budget; 52% of those cite higher-than-expected costs). Home Depot affiliate 1 to 8% by category with a short cookie (third-party summaries; confirm in Impact). Meta US CPM ~$19 to $22 and CTR 0.97% (AdKit, Biddyco). App Store small-business fee 15%. Everything else is an assumption.</p>
+</div>
+</section>
+</div>
+<script>
+/* ---------- defaults ---------- */
+const N0=18;
+const fillArr=(n,f)=>Array.from({length:n},(_,i)=>f(i+1));
+const DEF={
+ months:N0,fwd:true,
+ set:{life:6,refs:0.1,webFee:6,appFee:15,render:0.034,freeRenders:3,textCost:0.03,launchSell:true,target:5,ratio:3},
+ chans:[
+  {id:"org",on:true,name:"Organic reels (your own)",kind:"views",start:1,v:20000,g:15,cap:1000000,s:2},
+  {id:"seo",on:true,name:"SEO pages (\"Cost to ___ in [city]\")",kind:"search",start:4,v:500,g:20,cap:50000,conv:3},
+  {id:"ugc",on:true,name:"UGC creators",kind:"creators",start:1,views:100000,base:500,bonus:1.5,s:2},
+  {id:"meta",on:true,name:"Meta static ads",kind:"cpm",start:1,cpm:20,ctr:0.97,lp:15},
+  {id:"video",on:true,name:"Meta video ads",kind:"cpm",start:1,cpm:20,ctr:1.2,lp:15},
+  {id:"google",on:true,name:"Google search ads",kind:"cpc",start:1,cpc:7.85,cvr:7.33}],
+ plans:[
+  {id:"pack",on:true,name:"Small-item pack (40 credits)",type:"one-time",price:4.99,start:3,conv:1,churn:0,repeat:1,renders:25,cost:0,fixed:0,web:50},
+  {id:"plus",on:true,name:"Design Plus",type:"monthly",price:14.99,start:3,conv:1.5,churn:20,repeat:1,renders:60,cost:0.1,fixed:0,web:60},
+  {id:"pass",on:true,name:"Build Project Pass",type:"one-time",price:39,start:6,conv:0.7,churn:0,repeat:1,renders:40,cost:0.2,fixed:0,web:80},
+  {id:"pro",on:false,name:"Pro (small contractors)",type:"monthly",price:29,start:12,conv:0.2,churn:10,repeat:1,renders:200,cost:0.3,fixed:0,web:90}],
+ aff:{on:true,start:4,click:5,conv:8,aov:150,comm:4},
+ lead:{on:true,start:12,min:5000,req:1,sold:50,price:25},
+ costs:[{id:"base",name:"Hosting + tools (Vercel, Supabase, domain, Apple)"}],
+ grid:{
+  stage:fillArr(N0,m=>m<3?"Launch: organic only":m<6?"Validate: 1 creator":m<12?"Grow":"Scale"),
+  ch:{org:fillArr(N0,()=>0),seo:fillArr(N0,()=>0),ugc:fillArr(N0,m=>m<3?0:m<6?1:m<12?2:4),meta:fillArr(N0,m=>m<6?0:m<12?500:1500),video:fillArr(N0,m=>m<12?0:1500),google:fillArr(N0,()=>0)},
+  cost:{base:fillArr(N0,()=>150)}},
+ act:{ch:{},plan:{}}
+};
+const KINDS={
+ views:{label:'Views (your reels)',unit:'$ cost',lever:'s',leverName:'sign-ups per 1,000 views',f:[['v','Views in its first month'],['g','View growth per month, %'],['cap','Views cap per month'],['s','Sign-ups per 1,000 views','Your number; measure it']]},
+ search:{label:'Search (SEO)',unit:'$ cost',lever:'conv',leverName:'visit-to-sign-up %',f:[['v','Search visits in its first month'],['g','Search growth per month, %'],['cap','Search visits cap'],['conv','Visit to sign-up, %']]},
+ creators:{label:'Creators (UGC)',unit:'# creators',lever:'s',leverName:'sign-ups per 1,000 views',f:[['views','Views per creator per month','Grok: start ~100K; 1M is a stretch'],['base','Base pay per creator, $','Your number'],['bonus','Pay per 1,000 views, $','Your number'],['s','Sign-ups per 1,000 views','Your number']]},
+ cpm:{label:'Impressions (Meta, TikTok ads)',unit:'$ spend',lever:'lp',leverName:'landing sign-up %',f:[['cpm','CPM, $','Meta US ~$19–22'],['ctr','Click-through, %','Meta static 0.97% (AdKit)'],['lp','Landing to sign-up, %']]},
+ cpc:{label:'Clicks (Google ads)',unit:'$ spend',lever:'cvr',leverName:'click-to-sign-up %',f:[['cpc','Cost per click, $','WordStream Home $7.85'],['cvr','Click to sign-up, %','WordStream Home 7.33%']]},
+ cps:{label:'Pay per sign-up',unit:'$ spend',lever:null,f:[['cps','Price per sign-up, $','Referral bounty, affiliate, lead partner']]},
+ flat:{label:'Fixed (in person, email)',unit:'$ cost',lever:'users',leverName:'sign-ups per month',f:[['users','Sign-ups per month']]}};
+const NEWCH={views:{v:5000,g:10,cap:500000,s:2},search:{v:200,g:15,cap:20000,conv:3},creators:{views:50000,base:300,bonus:1,s:2},cpm:{cpm:20,ctr:1,lp:15},cpc:{cpc:7.85,cvr:7.33},cps:{cps:10},flat:{users:20}};
+
+/* ---------- state + scenarios ---------- */
+const STORE='hpModelV3';
+let LS=null;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');LS=localStorage}catch(e){LS=null}
+const clone=o=>JSON.parse(JSON.stringify(o));
+let BOOK={current:'Base plan',saved:{}};
+if(LS){try{const b=JSON.parse(LS.getItem(STORE));if(b&&b.saved)BOOK=b}catch(e){}}
+let S=clone(BOOK.saved[BOOK.current]||DEF);
+let dirty=false;
+function normalize(){
+ const N=S.months=Math.max(6,Math.min(48,Math.round(S.months||18)));
+ const fit=(a,fillv)=>{a=a||[];while(a.length<N)a.push(a.length?a[a.length-1]:fillv);return a.slice(0,N)};
+ S.grid=S.grid||{};S.grid.stage=fit(S.grid.stage,'');S.grid.ch=S.grid.ch||{};S.grid.cost=S.grid.cost||{};
+ S.chans.forEach(c=>{S.grid.ch[c.id]=fit(S.grid.ch[c.id],0)});
+ S.costs.forEach(c=>{S.grid.cost[c.id]=fit(S.grid.cost[c.id],0)});
+ S.act=S.act||{ch:{},plan:{}};
+ const fitB=a=>{a=a||[];while(a.length<N)a.push('');return a.slice(0,N)};
+ S.chans.forEach(c=>{const a=S.act.ch[c.id]=S.act.ch[c.id]||{};a.spend=fitB(a.spend);a.su=fitB(a.su)});
+ S.plans.forEach(p=>{S.act.plan[p.id]=fitB(S.act.plan[p.id]);if(p.repeat===undefined)p.repeat=1});
+}
+normalize();
+const persist=()=>{BOOK.saved[BOOK.current]=clone(S);if(LS)LS.setItem(STORE,JSON.stringify(BOOK));dirty=false};
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const get=p=>p.split('.').reduce((o,k)=>o==null?o:o[k],S);
+const set=(p,val)=>{const ks=p.split('.');const last=ks.pop();ks.reduce((o,k)=>o[k],S)[last]=val};
+const usd=x=>{if(x==null||!isFinite(x))return'–';const s=x<0?'-':'';const a=Math.abs(x);return s+'$'+(a>=1000?Math.round(a).toLocaleString():a>=100?Math.round(a):a.toFixed(2))};
+const num=x=>(x==null||!isFinite(x))?'–':Math.round(x).toLocaleString();
+const pct=x=>(x==null||!isFinite(x))?'–':(x*100>=10?Math.round(x*100):(x*100).toFixed(1))+'%';
+const rx=x=>(x==null||!isFinite(x))?'–':x.toFixed(x<1?2:1)+'×';
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const inp=(p,step,cls)=>`<input type="number" step="${step||'any'}" data-p="${p}" value="${get(p)}"${cls?` class="${cls}"`:''}>`;
+const chk=p=>`<input type="checkbox" data-p="${p}" ${get(p)?'checked':''}>`;
+const fld=(p,l,s)=>`<div class="f"><label>${l}${s?`<span class="s">${s}</span>`:''}</label>${inp(p)}</div>`;
+const uid=()=>'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const ratioCls=r=>!isFinite(r)?'':r>=S.set.ratio?'pos':r>=1?'mid':'neg';
+
+/* ---------- model ---------- */
+const feeOf=p=>(p.web/100)*S.set.webFee/100+(1-p.web/100)*S.set.appFee/100;
+const keepOf=p=>p.price*(1-feeOf(p))-p.renders*S.set.render-p.cost;
+const staysOf=p=>p.type==='monthly'?(p.churn>0?100/p.churn:S.months):p.repeat;
+const ltvOf=p=>keepOf(p)*staysOf(p);
+function chanMonth(c,m,G){
+ if(!c.on||m<c.start)return {u:0,c:0};
+ const t=m-c.start;G=+G||0;
+ switch(c.kind){
+  case 'views':{const V=Math.min(c.cap,c.v*Math.pow(1+c.g/100,t));return {u:V/1000*c.s,c:G}}
+  case 'search':{const V=Math.min(c.cap,c.v*Math.pow(1+c.g/100,t));return {u:V*c.conv/100,c:G}}
+  case 'creators':{const uv=G*c.views;return {u:uv/1000*c.s,c:G*c.base+uv/1000*c.bonus}}
+  case 'cpm':return {u:c.cpm?G/c.cpm*1000*c.ctr/100*c.lp/100:0,c:G};
+  case 'cpc':return {u:c.cpc?G/c.cpc*c.cvr/100:0,c:G};
+  case 'cps':return {u:c.cps?G/c.cps:0,c:G};
+  case 'flat':return {u:c.users,c:G};}
+ return {u:0,c:0};}
+function unitEcon(){
+ const on=S.plans.filter(p=>p.on);
+ const conv=Math.min(1,on.reduce((a,p)=>a+p.conv,0)/100);
+ const planVal=on.reduce((a,p)=>a+p.conv/100*ltvOf(p),0);
+ const mat=S.aff.on?S.aff.click/100*S.aff.conv/100*S.aff.aov*S.aff.comm/100*S.set.life:0;
+ const freeCost=(S.set.freeRenders*S.set.render+S.set.textCost)*S.set.life;
+ const perSU=planVal+mat-freeCost;
+ return {conv,planVal,mat,freeCost,perSU,perPayer:conv?planVal/conv:NaN};
+}
+function sim(){
+ const N=S.months,rows=[];let mau=0,cum=0;
+ const cu=S.chans.map(()=>0),cc=S.chans.map(()=>0),cm=S.chans.map(()=>[]);
+ const subs=S.plans.map(()=>0),nb=S.plans.map(()=>0),pm=S.plans.map(()=>[]);
+ for(let m=1;m<=N;m++){
+  let chU=0,chC=0;
+  S.chans.forEach((c,i)=>{const r=chanMonth(c,m,S.grid.ch[c.id][m-1]);chU+=r.u;chC+=r.c;cu[i]+=r.u;cc[i]+=r.c;cm[i].push(r)});
+  const newM=chU*(1+S.set.refs);
+  const prev=mau;mau=prev*(1-1/S.set.life)+newM;
+  const aff=S.aff.on&&m>=S.aff.start?mau*S.aff.click/100*S.aff.conv/100*S.aff.aov*S.aff.comm/100:0;
+  const lead=S.lead.on&&m>=S.lead.start&&mau>=S.lead.min?mau*S.lead.req/100*S.lead.sold/100*S.lead.price:0;
+  let pRev=0,pCost=0,payNew=0;
+  S.plans.forEach((p,i)=>{
+   if(!p.on||m<p.start){pm[i].push(0);return}
+   const pool=newM+(S.set.launchSell&&m===p.start?prev:0);const buyers=pool*p.conv/100;nb[i]+=buyers;payNew+=buyers;pm[i].push(buyers);
+   let units;if(p.type==='monthly'){subs[i]=subs[i]*(1-p.churn/100)+buyers;units=subs[i]}else units=buyers*p.repeat;
+   const rev=units*p.price;pRev+=rev;pCost+=rev*feeOf(p)+units*(p.renders*S.set.render+p.cost)+p.fixed;});
+  const usage=mau*(S.set.freeRenders*S.set.render+S.set.textCost);
+  const maint=S.costs.reduce((a,c)=>a+(+S.grid.cost[c.id][m-1]||0),0);
+  const rev=aff+lead+pRev,costs=chC+maint+usage+pCost,profit=rev-costs;cum+=profit;
+  rows.push({m,stage:S.grid.stage[m-1],chU,chC,newM,mau,payNew,aff,lead,pRev,pCost,usage,maint,rev,profit,cum});
+ }
+ return {rows,cu,cc,cm,subs,nb,pm};
+}
+
+/* ---------- static render (structure) ---------- */
+const OPEN=new Set();
+const COLS=['#2f5d50','#5f8a6e','#b07a2a','#4f6d8a','#8a5a7a','#7a6f62'];
+function renderStatic(){
+ normalize();
+ const N=S.months;
+ // scenario bar
+ const names=Object.keys(BOOK.saved);if(!names.includes(BOOK.current))names.unshift(BOOK.current);
+ $('scenBar').innerHTML=`<b>Scenario</b> <select id="scSel">${names.map(n=>`<option ${n===BOOK.current?'selected':''}>${esc(n)}</option>`).join('')}</select>
+ <input type="text" id="scName" placeholder="New scenario name" style="width:180px"> <button class="btn" id="scNew">Save as new</button> <button class="btn" id="scDel">Delete</button>
+ <span class="sp"></span><button class="btn" id="scExp">Export file</button> <label class="btn">Import file<input type="file" id="scImp" accept=".json" style="display:none"></label> <button class="btn" id="scReset">Reset to defaults</button>
+ <span class="note" style="width:100%">${LS?'Changes save automatically to this scenario in this browser. Export a file to keep a copy or move it to another computer.':'This preview can\'t save in the browser. Download the file and open it in Chrome or Safari to save scenarios, or use Export file to keep changes.'}</span>`;
+ $('tgtBox').innerHTML=inp('set.target');$('ratioBox').innerHTML=inp('set.ratio');
+ $('monthsBox').innerHTML=`<input type="number" step="1" min="6" max="48" data-p="months" data-struct="1" value="${S.months}" style="width:64px">`;
+ $('fwd').checked=!!S.fwd;
+ // channels table
+ let h=`<tr><th>On</th><th>Lead source</th><th>Type</th><th class="n">Spend</th><th class="n">Sign-ups</th><th class="n">Cost per sign-up</th><th class="n">Sign-ups per $100</th><th class="n">Cost per paying user</th><th class="n">Return</th><th>What it takes to hit $${S.set.target} per sign-up</th><th></th></tr>`;
+ S.chans.forEach((c,i)=>{const K=KINDS[c.kind];
+  h+=`<tr class="${c.on?'':'off'}"><td>${chk('chans.'+i+'.on')}</td><td>${esc(c.name)}</td><td><span class="pill">${K.label}</span></td>${[0,1,2,3,4,5,6].map(k=>`<td class="${k<6?'n':''}" id="cr${i}_${k}"></td>`).join('')}<td style="white-space:nowrap"><button class="btn ${OPEN.has('ch'+c.id)?'on':''}" data-edit="ch${c.id}">Edit</button> <button class="x" data-delch="${i}" title="Remove">×</button></td></tr>`;
+  if(OPEN.has('ch'+c.id))h+=`<tr class="weeds"><td colspan="11"><div class="wgrid"><div class="f"><label>Name</label><input type="text" class="w" data-p="chans.${i}.name" data-struct="1" value="${esc(c.name)}"></div><div class="f"><label>Type</label><select data-p="chans.${i}.kind">${Object.keys(KINDS).map(k=>`<option value="${k}" ${k===c.kind?'selected':''}>${KINDS[k].label}</option>`).join('')}</select></div>${fld('chans.'+i+'.start','Starts in month')}${K.f.map(x=>fld('chans.'+i+'.'+x[0],x[1],x[2])).join('')}</div><p class="note" style="margin:6px 0 0">Monthly ${K.unit.replace('$ ','')} for this source is in section 3, row "${esc(c.name)}".</p></td></tr>`;});
+ $('chTable').innerHTML=h;
+ $('addKind').innerHTML=Object.keys(KINDS).map(k=>`<option value="${k}">${KINDS[k].label}</option>`).join('');
+ // plans table
+ h=`<tr><th>On</th><th>Plan / feature</th><th>Type</th><th class="n">Price</th><th class="n">You keep per sale</th><th class="n">Conversion (of sign-ups)</th><th class="n">How long they pay</th><th class="n">Lifetime value per buyer</th><th class="n">Worth per sign-up</th><th class="n">Buyers, whole roadmap</th><th></th></tr>`;
+ S.plans.forEach((p,i)=>{
+  h+=`<tr class="${p.on?'':'off'}"><td>${chk('plans.'+i+'.on')}</td><td>${esc(p.name)}</td><td><span class="pill">${p.type==='monthly'?'Monthly':'One-time'}</span></td>${[0,1,2,3,4,5,6].map(k=>`<td class="n" id="pr${i}_${k}"></td>`).join('')}<td style="white-space:nowrap"><button class="btn ${OPEN.has('pl'+p.id)?'on':''}" data-edit="pl${p.id}">Edit</button> <button class="x" data-delpl="${i}" title="Remove">×</button></td></tr>`;
+  if(OPEN.has('pl'+p.id))h+=`<tr class="weeds"><td colspan="11"><div class="wgrid"><div class="f"><label>Name</label><input type="text" class="w" data-p="plans.${i}.name" data-struct="1" value="${esc(p.name)}"></div><div class="f"><label>Type</label><select data-p="plans.${i}.type"><option value="monthly" ${p.type==='monthly'?'selected':''}>Monthly</option><option value="one-time" ${p.type==='one-time'?'selected':''}>One-time</option></select></div>${fld('plans.'+i+'.price','Price, $')}${fld('plans.'+i+'.start','Launches in month')}${fld('plans.'+i+'.conv','Conversion, % of new sign-ups','Freemium median 2.1% for ALL plans combined (RevenueCat 2026)')}${p.type==='monthly'?fld('plans.'+i+'.churn','Cancel per month, %','AI apps ~20%; stay = 1 ÷ churn'):fld('plans.'+i+'.repeat','Purchases per buyer','1 = buys once')}${fld('plans.'+i+'.renders','Renders used','Per month (monthly) or per purchase')}${fld('plans.'+i+'.cost','Other cost per sale, $','Text/voice, storage')}${fld('plans.'+i+'.fixed','Fixed cost per month, $','Only while it\'s on')}${fld('plans.'+i+'.web','Bought on the web, %','The rest pay the App Store fee')}</div></td></tr>`;});
+ $('plTable').innerHTML=h;
+ // month grid
+ const hdr=`<tr><th>Month</th>${fillArr(N,m=>`<th class="n">${m}</th>`).join('')}</tr>`;
+ let g=hdr+`<tr><td><b>Stage</b> <span class="note">(names the roadmap bands)</span></td>${S.grid.stage.map((v,j)=>`<td><input type="text" data-g="stage.${j}" value="${esc(v)}" title="${esc(v)}"></td>`).join('')}</tr>`;
+ g+=`<tr class="hd"><td colspan="${N+1}">Lead sources: monthly spend (creators = number of creators)</td></tr>`;
+ S.chans.forEach(c=>{g+=`<tr class="${c.on?'':'off'}"><td>${esc(c.name)} <span class="pill">${KINDS[c.kind].unit}</span></td>${S.grid.ch[c.id].map((v,j)=>`<td><input type="number" step="any" data-g="ch.${c.id}.${j}" value="${v}"></td>`).join('')}</tr>`});
+ g+=`<tr class="hd"><td colspan="${N+1}">Costs to maintain, $ per month</td></tr>`;
+ S.costs.forEach(c=>{g+=`<tr><td>${esc(c.name)}</td>${S.grid.cost[c.id].map((v,j)=>`<td><input type="number" step="any" data-g="cost.${c.id}.${j}" value="${v}"></td>`).join('')}</tr>`});
+ g+=`<tr class="calc"><td>Free-user renders + text (calculated)</td>${fillArr(N,m=>`<td class="n" id="mg_u_${m}"></td>`).join('')}</tr>`;
+ g+=`<tr class="hd"><td colspan="${N+1}">Results</td></tr>`;
+ [['su','New sign-ups'],['cps','Cost per sign-up'],['pay','New paying users'],['mau','Active users'],['rev','Revenue'],['cost','All costs'],['pr','Profit'],['cum','Running total']].forEach(([k,l])=>{g+=`<tr class="calc ${k==='pr'||k==='cum'?'key':''}"><td>${l}</td>${fillArr(N,m=>`<td class="n" id="mg_${k}_${m}"></td>`).join('')}</tr>`});
+ $('mGrid').innerHTML=g;
+ // costs + settings
+ $('costTable').innerHTML=S.costs.map((c,i)=>`<tr><td><input type="text" class="w" style="width:100%" data-p="costs.${i}.name" data-struct="1" value="${esc(c.name)}"></td><td class="n" id="ct${i}"></td><td><button class="x" data-delcost="${i}" title="Remove">×</button></td></tr>`).join('')||'<tr><td class="note">No running costs yet.</td></tr>';
+ $('setBox').innerHTML=`<h3>Users, free usage and fees</h3>${fld('set.life','Months a user stays active','Projects end; Grok assumed ~4 paid months')}${fld('set.refs','New users each user brings','Before/after reveals get shared')}${fld('set.render','Cost per render, $','NB 2.1 1K $0.034; batch $0.017; NB2 1K $0.067')}${fld('set.freeRenders','Free renders per active user per month')}${fld('set.textCost','Text/assistant cost per active user, $/mo')}${fld('set.webFee','Web payment fees, %','Stripe ~2.9% + 30¢ + Billing')}${fld('set.appFee','App Store fee, %','15% small business')}<div class="f"><label>A plan's launch month also sells to users already active</label>${chk('set.launchSell')}</div>`;
+ $('otherBox').innerHTML=`<div class="card"><h3>${chk('aff.on')} Materials shopping list (affiliate)</h3>${fld('aff.start','Starts in month')}${fld('aff.click','Active users who open a materials list, %/mo')}${fld('aff.conv','Of those, buy through your link, %','Home Depot cookie is short (1 day per most summaries)')}${fld('aff.aov','Average order, $')}${fld('aff.comm','Commission, %','Home Depot 1–8% by category')}</div>`+
+ `<div class="card"><h3>${chk('lead.on')} Contractor referrals (pros pay)</h3>${fld('lead.start','Starts in month')}${fld('lead.min','Minimum active users before it works','You need pros signed up where users live')}${fld('lead.req','Active users who request a pro, %/mo')}${fld('lead.sold','Requests a pro pays for, %')}${fld('lead.price','Price per lead, $','Grok: $15–60; Thumbtack ~$8–420')}<p class="note">Not counted in value per sign-up, since it depends on reaching the minimum.</p></div>`;
+ // actuals grid
+ let a=hdr;
+ S.chans.forEach(c=>{const A=S.act.ch[c.id];
+  a+=`<tr class="${c.on?'':'off'}"><td>${esc(c.name)} · <b>spend $</b></td>${A.spend.map((v,j)=>`<td><input type="number" step="any" data-a="ch.${c.id}.spend.${j}" value="${v}"></td>`).join('')}</tr>`;
+  a+=`<tr class="${c.on?'':'off'}"><td>${esc(c.name)} · <b>sign-ups</b></td>${A.su.map((v,j)=>`<td><input type="number" step="any" data-a="ch.${c.id}.su.${j}" value="${v}"></td>`).join('')}</tr>`;});
+ a+=`<tr class="hd"><td colspan="${N+1}">Paying</td></tr>`;
+ S.plans.forEach(p=>{a+=`<tr class="${p.on?'':'off'}"><td>${esc(p.name)} · <b>new buyers</b></td>${S.act.plan[p.id].map((v,j)=>`<td><input type="number" step="any" data-a="plan.${p.id}.${j}" value="${v}"></td>`).join('')}</tr>`});
+ $('aGrid').innerHTML=a;
+}
+
+/* ---------- live render (numbers) ---------- */
+let LAST=null;
+function takes(c,cps,T){
+ T=T===undefined?S.set.target:T;const K=KINDS[c.kind];
+ if(!c.on)return '<span class="note">off</span>';
+ if(!isFinite(cps))return '<span class="note">no sign-ups yet; add spend in section 3</span>';
+ if(cps<=T)return '<span class="pos">Already at or under target</span>';
+ if(T<=0)return '<span class="neg">Not reachable: a sign-up is worth $0 or less. Fix plan value first (section 2).</span>';
+ const f=cps/T,r=v=>v>=100?Math.round(v).toLocaleString():(+v.toFixed(2)).toString(),pc=v=>v>100?`<span class="neg">${r(v)}% (impossible)</span>`:`<b>${r(v)}%</b>`;
+ switch(c.kind){
+  case 'cpm':return `Landing sign-up ${r(c.lp)}% → ${pc(c.lp*f)}, or click-through ${r(c.ctr)}% → ${pc(c.ctr*f)}, or CPM ≤ <b>$${r(c.cpm/f)}</b>`;
+  case 'cpc':return `Click-to-sign-up ${r(c.cvr)}% → ${pc(c.cvr*f)}, or cost per click ≤ <b>$${r(c.cpc/f)}</b>`;
+  case 'creators':{let t=`Sign-ups per 1,000 views ${r(c.s)} → <b>${r(c.s*f)}</b>`;const d=T*c.s-c.bonus;t+=d>0?`, or <b>${r(1000*c.base/d)}</b> views per creator`:`; at this view bonus no view count gets there`;return t}
+  case 'cps':return `Pay ≤ <b>$${r(T)}</b> per sign-up`;
+  case 'views':return `Sign-ups per 1,000 views ${r(c.s)} → <b>${r(c.s*f)}</b>, or cut monthly cost to ${Math.round(100/f)}%`;
+  case 'search':return `Visit-to-sign-up ${r(c.conv)}% → ${pc(c.conv*f)}, or cut monthly cost to ${Math.round(100/f)}%`;
+  case 'flat':return `<b>${r(c.users*f)}</b> sign-ups a month at this cost, or cut cost to ${Math.round(100/f)}%`;}
+ return '';
+}
+function actuals(R){
+ const chs=[],pls=[];const N=S.months;const totSU=fillArr(N,()=>0),has=fillArr(N,()=>false);
+ S.chans.forEach((c,i)=>{const A=S.act.ch[c.id];let sp=0,su=0,ps=0,pu=0,n=0;
+  for(let j=0;j<N;j++){if(A.spend[j]===''&&A.su[j]==='')continue;n++;has[j]=true;sp+=+A.spend[j]||0;su+=+A.su[j]||0;totSU[j]+=+A.su[j]||0;ps+=R.cm[i][j].c;pu+=R.cm[i][j].u}
+  if(n)chs.push({i,c,n,sp,su,ps,pu,real:su?sp/su:NaN,plan:pu?ps/pu:NaN})});
+ S.plans.forEach((p,i)=>{const A=S.act.plan[p.id];let b=0,s=0,n=0;
+  for(let j=0;j<N;j++){if(A[j]==='')continue;n++;b+=+A[j]||0;s+=totSU[j]}
+  if(n)pls.push({i,p,n,b,s,real:s?b/s*100:NaN})});
+ return {chs,pls};
+}
+function renderLive(){
+ const R=sim(),E=unitEcon(),rows=R.rows,N=S.months;LAST=R;
+ const spend=R.cc.reduce((a,b)=>a+b,0),chSU=R.cu.reduce((a,b)=>a+b,0),allSU=rows.reduce((a,r)=>a+r.newM,0);
+ const cps=allSU?spend/allSU:NaN,cpp=E.conv?cps/E.conv:NaN,ret=cps>0?E.perSU/cps:Infinity;
+ let bi=-1;for(let i=rows.length-1;i>=0;i--){if(rows[i].profit>=0&&rows[i].rev>0)bi=i;else break}
+ const be=bi>=0?rows[bi]:null,low=Math.min(0,...rows.map(r=>r.cum)),last=rows[rows.length-1];
+ $('flow').innerHTML=`<span><b>${usd(spend)}</b> on lead sources</span><span class="ar">→</span><span><b>${num(allSU)}</b> sign-ups at <b>${usd(cps)}</b> each</span><span class="ar">→</span><span><b>${pct(E.conv)}</b> pay = ~<b>${num(allSU*E.conv)}</b> paying users at <b>${usd(cpp)}</b> each</span><span class="ar">→</span><span>each payer worth <b>${usd(E.perPayer)}</b></span><span class="ar">→</span><span>every $1 spent returns <b class="${ratioCls(ret)}">${isFinite(ret)?usd(ret):'∞'}</b></span>`;
+ const K=(v,l,cls,big)=>`<div class="kpi ${big?'big':''}"><div class="v ${cls||''}">${v}</div><div class="l">${l}</div></div>`;
+ $('kpis').innerHTML=K(usd(cps),'Cost per sign-up (all sources, incl. referrals)','',1)+K(pct(E.conv),'Sign-up → paid (all plans that are on)','',1)+K(usd(cpp),'Cost per paying user','',1)+K(usd(E.perPayer),'Lifetime value per paying user','',1)+K(isFinite(ret)?rx(ret):'∞','Return: value per sign-up ÷ cost per sign-up',ratioCls(ret),1)+
+  K(usd(E.perSU),'Value per sign-up (after free-user costs)')+K(num(allSU),'Sign-ups over '+N+' months')+K(be?'Month '+be.m:'Not in '+N+' mo','First month it stays above water',be?'pos':'neg')+K(usd(-low),'Most money you\'re down at any point')+K(usd(last.cum),'Total profit over the roadmap',last.cum>=0?'pos':'neg');
+ $('kpiNote').textContent=`Cost per sign-up = ${usd(spend)} spend ÷ ${num(allSU)} sign-ups. Paying share and lifetime value come from section 2. Last month: ${num(last.mau)} active users, profit ${usd(last.profit)}.`;
+ // channels
+ S.chans.forEach((c,i)=>{const u=R.cu[i],cc=R.cc[i],cs=u?cc/u:NaN,cp=E.conv?cs/E.conv:NaN,rt=cs>0?E.perSU/cs:(u?Infinity:NaN);
+  const v=[usd(cc),num(u),usd(cs),cc>0?(u/cc*100).toFixed(1):(u?'free':'–'),usd(cp),isFinite(rt)?rx(rt):(u?'∞':'–'),takes(c,cs)];
+  v.forEach((t,k)=>{const e=$('cr'+i+'_'+k);if(e){e.innerHTML=t;if(k===5)e.className='n '+ratioCls(rt)}})});
+ // plans
+ S.plans.forEach((p,i)=>{const k=keepOf(p),st=staysOf(p),l=ltvOf(p);
+  const v=[usd(p.price)+(p.type==='monthly'?'/mo':''),usd(k),p.conv+'%',p.type==='monthly'?(p.churn>0?st.toFixed(1)+' months':'never cancel'):(p.repeat==1?'buys once':p.repeat+' purchases'),usd(l),usd(p.on?p.conv/100*l:0),num(R.nb[i])];
+  v.forEach((t,j)=>{const e=$('pr'+i+'_'+j);if(e){e.textContent=t;if(j===1||j===4)e.className='n '+(+k>0?'':'neg')}})});
+ $('valTable').innerHTML=S.plans.filter(p=>p.on).map(p=>`<tr><td>${esc(p.name)}: ${p.conv}% buy × ${usd(ltvOf(p))} lifetime value</td><td class="n">${usd(p.conv/100*ltvOf(p))}</td></tr>`).join('')+
+  `<tr><td>Materials commissions per user over ${S.set.life} months</td><td class="n">${usd(E.mat)}</td></tr><tr><td>Minus what a free user costs you (renders + text over ${S.set.life} months)</td><td class="n neg">-${usd(E.freeCost)}</td></tr>`+
+  `<tr><td><b>Value per sign-up</b></td><td class="n"><b>${usd(E.perSU)}</b></td></tr><tr><td>Value per paying user = plan value per sign-up ${usd(E.planVal)} ÷ ${pct(E.conv)} who pay</td><td class="n"><b>${usd(E.perPayer)}</b></td></tr>`+
+  `<tr><td>Cost per sign-up (section 1)</td><td class="n">${usd(cps)}</td></tr><tr><td><b>Return</b> (value ÷ cost; ${S.set.ratio}× or more is healthy)</td><td class="n ${ratioCls(ret)}"><b>${isFinite(ret)?rx(ret):'∞'}</b></td></tr>`;
+ // month grid calc rows
+ rows.forEach(r=>{const m=r.m,s=(k,t,c)=>{const e=$('mg_'+k+'_'+m);if(e){e.textContent=t;if(c!==undefined)e.className='n '+c}};
+  s('u',usd(r.usage));s('su',num(r.newM));s('cps',r.newM?usd(r.chC/r.newM):'–');s('pay',num(r.payNew));s('mau',num(r.mau));s('rev',usd(r.rev));s('cost',usd(r.chC+r.maint+r.usage+r.pCost));s('pr',usd(r.profit),r.profit>=0?'pos':'neg');s('cum',usd(r.cum),r.cum>=0?'pos':'neg')});
+ S.costs.forEach((c,i)=>{const e=$('ct'+i);if(e)e.textContent=usd(S.grid.cost[c.id].reduce((a,b)=>a+(+b||0),0))+' total'});
+ // roadmap
+ const P=m=>(m-1)/N*100;let t=`<div class="months" style="--n:${N}">${rows.map(r=>`<div>${r.m}</div>`).join('')}</div><div class="lane">`;
+ let s0=1,ci=0;for(let m=2;m<=N+1;m++){if(m>N||S.grid.stage[m-1]!==S.grid.stage[s0-1]){const lab=S.grid.stage[s0-1];if(lab)t+=`<div class="band" style="left:${P(s0)}%;width:${(m-s0)/N*100}%;background:${COLS[ci%COLS.length]}" title="${esc(lab)}">${esc(lab)}</div>`;ci++;s0=m}}
+ t+='</div>';const marks=[];
+ S.plans.forEach(p=>{if(p.on)marks.push([p.start,p.name])});
+ S.chans.forEach((c,i)=>{if(c.on){const j=R.cm[i].findIndex(x=>x.u>0);if(j>0)marks.push([j+1,c.name+' starts'])}});
+ if(S.aff.on)marks.push([S.aff.start,'Materials links']);
+ if(S.lead.on){const r=rows.find(r=>r.lead>0);marks.push([r?r.m:S.lead.start,'Contractor leads'+(r?'':' (not reached)')])}
+ marks.sort((a,b)=>a[0]-b[0]);const lanes=[];marks.forEach(mk=>{let L=lanes.findIndex(l=>mk[0]-l>=3);if(L<0){L=lanes.length;lanes.push(0)}lanes[L]=mk[0];mk.push(L)});
+ for(let L=0;L<lanes.length;L++)t+='<div class="lane">'+marks.filter(m=>m[2]===L&&m[0]<=N).map(m=>`<div class="mk" style="left:${P(m[0])+50/N}%">${esc(m[1])}</div>`).join('')+'</div>';
+ if(be)t+=`<div class="be" style="left:${P(be.m)}%"></div>`;
+ $('roadTrack').innerHTML='<div style="position:relative">'+t+'</div>';
+ // chart
+ const W=1000,H=300,pad=30,bw=(W-2*pad)/N,maxP=Math.max(1,...rows.map(r=>Math.abs(r.profit))),mid=H/2,maxM=Math.max(1,...rows.map(r=>r.mau));
+ let svg=`<line x1="${pad}" y1="${mid}" x2="${W-pad}" y2="${mid}" stroke="#ccc"/>`;
+ rows.forEach((r,i)=>{const h=Math.abs(r.profit)/maxP*(mid-20),x=pad+i*bw+bw*.15;svg+=`<rect x="${x}" y="${r.profit>=0?mid-h:mid}" width="${bw*.7}" height="${h}" fill="${r.profit>=0?'#1f7a3f':'#b3261e'}" opacity=".8"><title>Month ${r.m}: ${usd(r.profit)}</title></rect><text x="${pad+i*bw+bw/2}" y="${H-4}" font-size="11" text-anchor="middle" fill="#888">${r.m}</text>`});
+ svg+=`<polyline points="${rows.map((r,i)=>`${pad+i*bw+bw/2},${H-22-(r.mau/maxM)*(H-50)}`).join(' ')}" fill="none" stroke="#2f5d50" stroke-width="2.5"/><text x="${W-pad}" y="14" font-size="12" text-anchor="end" fill="#2f5d50">${num(maxM)} users</text><text x="${pad}" y="14" font-size="12" fill="#555">+${usd(maxP)}</text><text x="${pad}" y="${H-24}" font-size="12" fill="#555">-${usd(maxP)}</text>`;
+ $('svg').innerHTML=svg;
+ // real numbers
+ const A=actuals(R);
+ if(!A.chs.length&&!A.pls.length){$('cmp').innerHTML='<p class="note">No real numbers yet. Enter spend and sign-ups for a month above.</p>'}
+ else{let c='<table><tr><th>Lead source</th><th class="n">Months</th><th class="n">Real cost/sign-up</th><th class="n">Plan</th><th class="n">Gap</th><th></th></tr>';
+  A.chs.forEach(x=>{const g=x.real/x.plan;c+=`<tr><td>${esc(x.c.name)}<div class="note">${usd(x.sp)} → ${num(x.su)} sign-ups</div></td><td class="n">${x.n}</td><td class="n">${usd(x.real)}</td><td class="n">${usd(x.plan)}</td><td class="n ${!isFinite(g)?'':g>1.15?'neg':g<0.87?'pos':''}">${isFinite(g)?rx(g):'–'}</td><td>${(x.pu>0&&x.su>0)?`<button class="btn" data-usech="${x.i}">Use real rate</button>`:''}</td></tr>`});
+  c+='<tr><th>Plan</th><th class="n">Months</th><th class="n">Real conversion</th><th class="n">Plan</th><th class="n">Gap</th><th></th></tr>';
+  A.pls.forEach(x=>{const g=x.real/x.p.conv;c+=`<tr><td>${esc(x.p.name)}<div class="note">${num(x.b)} buyers from ${num(x.s)} sign-ups</div></td><td class="n">${x.n}</td><td class="n">${isFinite(x.real)?x.real.toFixed(2)+'%':'–'}</td><td class="n">${x.p.conv}%</td><td class="n ${!isFinite(g)?'':g<0.87?'neg':g>1.15?'pos':''}">${isFinite(g)?rx(g):'–'}</td><td>${isFinite(x.real)?`<button class="btn" data-usepl="${x.i}">Use real rate</button>`:''}</td></tr>`});
+  $('cmp').innerHTML=c+'</table><p class="note">Gap for lead sources = real cost ÷ planned cost (above 1× is worse). For plans = real ÷ planned conversion (below 1× is worse). Planned numbers use the same months you filled in.</p>'}
+ const fx=[];
+ A.chs.forEach(x=>{const g=x.real/x.plan;if(isFinite(g)&&g>1.15){const K=KINDS[x.c.kind];fx.push([x.sp*(g-1),`<b>${esc(x.c.name)}</b> costs ${usd(x.real)} per sign-up vs ${usd(x.plan)} planned (${rx(g)}). ${K.lever?`Main lever: ${K.leverName}.`:'Negotiate the price per sign-up.'} To hit your $${S.set.target} target: ${takes(x.c,x.real)}.`,'Real'])}});
+ A.pls.forEach(x=>{const g=x.real/x.p.conv;if(isFinite(g)&&g<0.87)fx.push([x.s*(x.p.conv-x.real)/100*ltvOf(x.p),`<b>${esc(x.p.name)}</b> converts ${x.real.toFixed(2)}% of sign-ups vs ${x.p.conv}% planned. Worth testing the offer, price or where it's shown.`,'Real'])});
+ S.chans.forEach((c,i)=>{const u=R.cu[i],cs=u?R.cc[i]/u:NaN;if(c.on&&isFinite(cs)&&cs>0&&E.perSU/cs<1)fx.push([R.cc[i],`<b>${esc(c.name)}</b>: each sign-up costs ${usd(cs)} but is worth ${usd(E.perSU)}, so it loses money at today's rates. To break even: ${takes(c,cs,E.perSU)}.`,'Model'])});
+ if(E.perSU<=0)fx.push([1e9,`A sign-up is worth ${usd(E.perSU)} after free-user costs. Raise plan conversion or prices, or lower render use, before spending on ads.`,'Model']);
+ fx.sort((a,b)=>(a[2]===b[2]?b[0]-a[0]:a[2]==='Real'?-1:1));
+ $('fix').innerHTML=fx.length?'<ol class="fix">'+fx.slice(0,6).map(f=>`<li><span class="pill">${f[2]==='Real'?'Real numbers':'Model'}</span> ${f[1]}</li>`).join('')+'</ol><p class="note">Ranked by money at stake.</p>':'<p class="note">Nothing flagged. Every lead source returns more than it costs, and real numbers (if any) are on plan.</p>';
+ persist();
+}
+const all=()=>{renderStatic();renderLive()};
+
+/* ---------- events ---------- */
+document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
+ if(d.p&&t.type!=='checkbox'&&t.tagName!=='SELECT'){set(d.p,t.type==='number'?(parseFloat(t.value)||0):t.value);if(!d.struct)renderLive();return}
+ if(d.g){const [k,...r]=d.g.split('.');const j=+r.pop();const arr=k==='stage'?S.grid.stage:S.grid[k][r[0]];const old=arr[j];const v=k==='stage'?t.value:(parseFloat(t.value)||0);arr[j]=v;
+  if(S.fwd){for(let q=j+1;q<arr.length;q++){if(k==='stage'&&arr[q]!==old)break;arr[q]=v;const el=document.querySelector(`[data-g="${k}.${r.length?r[0]+'.':''}${q}"]`);if(el)el.value=v}}
+  renderLive();return}
+ if(d.a){const ks=d.a.split('.');const j=+ks.pop();const arr=ks[0]==='ch'?S.act.ch[ks[1]][ks[2]]:S.act.plan[ks[1]];arr[j]=t.value===''?'':(parseFloat(t.value)||0);renderLive();return}
+});
+document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
+ if(t.id==='fwd'){S.fwd=t.checked;persist();return}
+ if(t.id==='scSel'){persist();BOOK.current=t.value;S=clone(BOOK.saved[t.value]||DEF);OPEN.clear();all();return}
+ if(t.id==='scImp'){const f=t.files[0];if(!f)return;f.text().then(x=>{try{const o=JSON.parse(x);if(o.saved){BOOK=o;S=clone(BOOK.saved[BOOK.current]||Object.values(BOOK.saved)[0])}else if(o.chans){BOOK.current='Imported '+new Date().toLocaleDateString();BOOK.saved[BOOK.current]=o;S=clone(o)}all()}catch(err){alert('That file is not a model export.')}})}
+ if(!d.p)return;
+ if(t.type==='checkbox'||t.tagName==='SELECT'){set(d.p,t.type==='checkbox'?t.checked:t.value);
+  const mk=d.p.match(/^chans\.(\d+)\.kind$/);if(mk){const c=S.chans[+mk[1]];Object.entries(NEWCH[c.kind]).forEach(([k,v])=>{if(c[k]===undefined)c[k]=v})}
+  all();return}
+ if(d.struct)all();
+});
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+ if(d.edit){OPEN.has(d.edit)?OPEN.delete(d.edit):OPEN.add(d.edit);all();return}
+ if(d.delch!==undefined){const c=S.chans[+d.delch];if(confirm('Remove lead source "'+c.name+'"?')){S.chans.splice(+d.delch,1);delete S.grid.ch[c.id];delete S.act.ch[c.id];all()}return}
+ if(d.delpl!==undefined){const p=S.plans[+d.delpl];if(confirm('Remove plan "'+p.name+'"?')){S.plans.splice(+d.delpl,1);delete S.act.plan[p.id];all()}return}
+ if(d.delcost!==undefined){const c=S.costs[+d.delcost];S.costs.splice(+d.delcost,1);delete S.grid.cost[c.id];all();return}
+ if(d.usech!==undefined){const i=+d.usech,c=S.chans[i],x=actuals(LAST).chs.find(z=>z.i===i);if(!x)return;
+  const paid=['cpm','cpc','cps','creators'].includes(c.kind);const f=paid?(x.su/x.sp)/(x.pu/x.ps):x.su/x.pu;if(!isFinite(f)||f<=0)return;
+  const K=KINDS[c.kind];if(c.kind==='cps')c.cps=+(c.cps/f).toFixed(3);else c[K.lever]=+(c[K.lever]*f).toFixed(3);all();return}
+ if(d.usepl!==undefined){const i=+d.usepl,x=actuals(LAST).pls.find(z=>z.i===i);if(x&&isFinite(x.real)){S.plans[i].conv=+x.real.toFixed(3);all()}return}
+ switch(t.id){
+  case 'addChan':{const k=$('addKind').value,id=uid();S.chans.push(Object.assign({id,on:true,name:'New lead source',kind:k,start:1},clone(NEWCH[k])));OPEN.add('ch'+id);all();break}
+  case 'addPlan':{const id=uid();S.plans.push({id,on:true,name:'New plan',type:'monthly',price:9.99,start:6,conv:0.5,churn:20,repeat:1,renders:20,cost:0,fixed:0,web:60});OPEN.add('pl'+id);all();break}
+  case 'addCost':{S.costs.push({id:uid(),name:'New running cost'});all();break}
+  case 'scNew':{const n=($('scName').value||'').trim();if(!n){$('scName').focus();return}persist();BOOK.current=n;BOOK.saved[n]=clone(S);all();break}
+  case 'scDel':{if(Object.keys(BOOK.saved).length<2){alert('Keep at least one scenario.');return}if(!confirm('Delete scenario "'+BOOK.current+'"?'))return;delete BOOK.saved[BOOK.current];BOOK.current=Object.keys(BOOK.saved)[0];S=clone(BOOK.saved[BOOK.current]);if(LS)LS.setItem(STORE,JSON.stringify(BOOK));all();break}
+  case 'scReset':{if(!confirm('Reset "'+BOOK.current+'" to the defaults?'))return;S=clone(DEF);all();break}
+  case 'scExp':{BOOK.saved[BOOK.current]=clone(S);const b=new Blob([JSON.stringify(BOOK,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='home-projects-model.json';document.body.appendChild(a);a.click();a.remove();break}
+ }
+});
+BOOK.saved[BOOK.current]=BOOK.saved[BOOK.current]||clone(S);
+all();
+</script>
+</body>
+</html>

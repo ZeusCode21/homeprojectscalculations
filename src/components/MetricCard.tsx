@@ -1,0 +1,44 @@
+'use client';
+
+import { cn } from '@/lib/utils';
+
+interface MetricCardProps {
+  label: string;
+  value: string;
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+export function MetricCard({
+  label,
+  value,
+  variant = 'default',
+  size = 'md',
+  className,
+}: MetricCardProps) {
+  return (
+    <div
+      className={cn(
+        'bg-card border rounded-lg p-4',
+        variant === 'primary' && 'border-primary',
+        className
+      )}
+    >
+      <div
+        className={cn(
+          'font-serif tabular-nums',
+          size === 'sm' && 'text-lg',
+          size === 'md' && 'text-2xl',
+          size === 'lg' && 'text-3xl',
+          variant === 'success' && 'text-success',
+          variant === 'warning' && 'text-warning',
+          variant === 'danger' && 'text-danger'
+        )}
+      >
+        {value}
+      </div>
+      <div className="text-xs text-muted-foreground mt-1">{label}</div>
+    </div>
+  );
+}
