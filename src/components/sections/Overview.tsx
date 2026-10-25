@@ -17,7 +17,14 @@ export function Overview() {
   
   return (
     <section id="overview" className="scroll-mt-16">
-      <div className="flex items-center gap-3 mb-4">
+      {/* Roadmap strip - at the top */}
+      <RoadmapStrip
+        scenario={scenario}
+        simResult={simResult}
+        breakEvenMonth={metrics.breakEvenMonth}
+      />
+      
+      <div className="flex items-center gap-3 mt-6 mb-4">
         <h2 className="font-serif text-2xl">Top numbers</h2>
         <Badge variant="secondary">whole roadmap</Badge>
       </div>
@@ -101,17 +108,8 @@ export function Overview() {
         Last month: {formatNum(metrics.lastMau)} active users.
       </p>
       
-      {/* Roadmap strip */}
-      <div className="mt-6">
-        <RoadmapStrip
-          scenario={scenario}
-          simResult={simResult}
-          breakEvenMonth={metrics.breakEvenMonth}
-        />
-      </div>
-      
       {/* Profit chart */}
-      <div className="mt-4">
+      <div className="mt-6">
         <ProfitChart rows={simResult.rows} />
       </div>
     </section>
