@@ -1,6 +1,6 @@
 'use client';
 
-import { SimRow, SimResult, Scenario, ChanMonthResult } from '@/lib/model';
+import { SimResult, Scenario, ChanMonthResult } from '@/lib/model';
 
 interface RoadmapStripProps {
   scenario: Scenario;

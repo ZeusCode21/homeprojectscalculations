@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import { useModel } from '@/lib/context';
 import {
   formatUsd,
@@ -50,23 +50,8 @@ interface ActualPlan {
 export function RealNumbers() {
   const { scenario, simResult, econ, updateScenarioDeep, logChange } = useModel();
   const N = scenario.months;
-  
-  // Initialize actuals if needed
-  useMemo(() => {
-    scenario.chans.forEach(c => {
-      if (!scenario.act.ch[c.id]) {
-        scenario.act.ch[c.id] = {
-          spend: Array(N).fill(''),
-          su: Array(N).fill('')
-        };
-      }
-    });
-    scenario.plans.forEach(p => {
-      if (!scenario.act.plan[p.id]) {
-        scenario.act.plan[p.id] = Array(N).fill('');
-      }
-    });
-  }, [scenario, N]);
+
+  // actuals are initialized in normalizeScenario — never mutate scenario from render
   
   const handleActualChange = (
     type: 'ch' | 'plan',
@@ -266,7 +251,7 @@ export function RealNumbers() {
       <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
         Type what actually happened each month (from Meta Ads, Google Ads, creator links, your sign-up table and Stripe/Whop).
         Leave a month blank until you have it. The comparison shows where reality differs from the plan,
-        and "Use real rate" updates the model to match.
+        and &quot;Use real rate&quot; updates the model to match.
       </p>
       
       {/* Actuals entry grid */}
@@ -289,8 +274,8 @@ export function RealNumbers() {
               {scenario.chans.map(chan => {
                 const A = scenario.act.ch[chan.id] || { spend: [], su: [] };
                 return (
-                  <>
-                    <tr key={`${chan.id}-spend`} className={cn(!chan.on && 'opacity-50')}>
+                  <Fragment key={chan.id}>
+                    <tr className={cn(!chan.on && 'opacity-50')}>
                       <td className="sticky left-0 bg-card z-10 p-2 border-b">
                         {chan.name} · <strong>spend $</strong>
                       </td>
@@ -306,7 +291,7 @@ export function RealNumbers() {
                         </td>
                       ))}
                     </tr>
-                    <tr key={`${chan.id}-su`} className={cn(!chan.on && 'opacity-50')}>
+                    <tr className={cn(!chan.on && 'opacity-50')}>
                       <td className="sticky left-0 bg-card z-10 p-2 border-b">
                         {chan.name} · <strong>sign-ups</strong>
                       </td>
@@ -322,7 +307,7 @@ export function RealNumbers() {
                         </td>
                       ))}
                     </tr>
-                  </>
+                  </Fragment>
                 );
               })}
               <tr className="bg-muted/50">

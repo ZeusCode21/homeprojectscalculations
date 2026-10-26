@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Scenario,
   sim,
@@ -16,6 +16,7 @@ import {
   AppState,
   loadState,
   saveState,
+  createDefaultState,
   getCurrentBusiness,
   getCurrentScenario,
   setCurrentBusiness,
@@ -39,12 +40,12 @@ interface ModelContextValue {
   simResult: SimResult;
   econ: UnitEcon;
   metrics: TopMetrics;
-  
+
   // Business
   currentBusinessId: string;
   currentBusinessName: string;
   setBusinessId: (id: string) => void;
-  
+
   // Scenario
   scenarioMetas: ScenarioMeta[];
   currentScenarioId: string;
@@ -54,11 +55,11 @@ interface ModelContextValue {
   resetToDefaults: () => void;
   exportJson: () => string;
   importJson: (json: string) => boolean;
-  
+
   // Updates
   updateScenarioField: <K extends keyof Scenario>(key: K, value: Scenario[K]) => void;
   updateScenarioDeep: (updater: (s: Scenario) => void) => void;
-  
+
   // Change log
   changeLog: ChangeLogEntry[];
   logChange: (what: string, oldVal: string, newVal: string, reason: 'use real rate' | 'manual') => void;
@@ -67,111 +68,92 @@ interface ModelContextValue {
 const ModelContext = createContext<ModelContextValue | null>(null);
 
 export function ModelProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AppState | null>(null);
-  const [simResult, setSimResult] = useState<SimResult | null>(null);
-  const [econ, setEcon] = useState<UnitEcon | null>(null);
-  const [metrics, setMetrics] = useState<TopMetrics | null>(null);
-  
-  // Load on mount
+  // Same defaults on server and first client paint → no hydration mismatch.
+  // localStorage is applied after mount.
+  const [state, setState] = useState<AppState>(() => createDefaultState());
+  const [hydrated, setHydrated] = useState(false);
+
   useEffect(() => {
-    const loaded = loadState();
-    setState(loaded);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: hydrate from localStorage after mount
+    setState(loadState());
+    setHydrated(true);
   }, []);
-  
-  // Recompute when scenario changes
-  useEffect(() => {
-    if (!state) return;
-    
+
+  const { simResult, econ, metrics } = useMemo(() => {
     const scenario = getCurrentScenario(state);
     const newSimResult = sim(scenario);
     const newEcon = unitEcon(scenario);
     const newMetrics = calcTopMetrics(scenario, newSimResult, newEcon);
-    
-    setSimResult(newSimResult);
-    setEcon(newEcon);
-    setMetrics(newMetrics);
+    return { simResult: newSimResult, econ: newEcon, metrics: newMetrics };
   }, [state]);
-  
-  // Save on change
+
+  // Persist after hydration so we don't overwrite stored data with defaults
   useEffect(() => {
-    if (state) {
-      saveState(state);
-    }
-  }, [state]);
-  
+    if (!hydrated) return;
+    saveState(state);
+  }, [state, hydrated]);
+
   const setBusinessId = useCallback((id: string) => {
-    setState(s => s ? setCurrentBusiness(s, id) : s);
+    setState(s => setCurrentBusiness(s, id));
   }, []);
-  
+
   const setScenarioId = useCallback((id: string) => {
-    setState(s => s ? setCurrentScenario(s, id) : s);
+    setState(s => setCurrentScenario(s, id));
   }, []);
-  
+
   const saveAsNew = useCallback((name: string) => {
-    setState(s => s ? createScenario(s, name) : s);
+    setState(s => createScenario(s, name));
   }, []);
-  
+
   const deleteCurrentScenario = useCallback(() => {
     setState(s => {
-      if (!s) return s;
       const business = getCurrentBusiness(s);
       return deleteScenario(s, business.currentScenario);
     });
   }, []);
-  
+
   const resetToDefaults = useCallback(() => {
-    setState(s => s ? resetScenario(s) : s);
+    setState(s => resetScenario(s));
   }, []);
-  
+
   const exportJson = useCallback(() => {
-    if (!state) return '{}';
     return exportBusiness(state);
   }, [state]);
-  
+
   const importJson = useCallback((json: string): boolean => {
     try {
-      setState(s => s ? importScenarios(s, json) : s);
+      setState(s => importScenarios(s, json));
       return true;
     } catch {
       return false;
     }
   }, []);
-  
+
   const updateScenarioField = useCallback(<K extends keyof Scenario>(key: K, value: Scenario[K]) => {
     setState(s => {
-      if (!s) return s;
       const scenario = clone(getCurrentScenario(s));
       scenario[key] = value;
       normalizeScenario(scenario);
       return updateScenario(s, scenario);
     });
   }, []);
-  
+
   const updateScenarioDeep = useCallback((updater: (s: Scenario) => void) => {
     setState(s => {
-      if (!s) return s;
       const scenario = clone(getCurrentScenario(s));
       updater(scenario);
       normalizeScenario(scenario);
       return updateScenario(s, scenario);
     });
   }, []);
-  
+
   const logChange = useCallback((what: string, oldVal: string, newVal: string, reason: 'use real rate' | 'manual') => {
-    setState(s => s ? addChangeLog(s, what, oldVal, newVal, reason) : s);
+    setState(s => addChangeLog(s, what, oldVal, newVal, reason));
   }, []);
-  
-  if (!state || !simResult || !econ || !metrics) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-  
+
   const business = getCurrentBusiness(state);
   const scenario = getCurrentScenario(state);
-  
+
   const value: ModelContextValue = {
     state,
     scenario,
@@ -194,7 +176,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
     changeLog: business.changeLog,
     logChange,
   };
-  
+
   return (
     <ModelContext.Provider value={value}>
       {children}

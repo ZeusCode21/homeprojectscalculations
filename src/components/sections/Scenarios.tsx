@@ -189,8 +189,8 @@ export function Scenarios() {
           <div className="flex-1" />
           
           <Dialog open={showCompare} onOpenChange={setShowCompare}>
-            <DialogTrigger>
-              <Button variant="outline">Compare scenarios</Button>
+            <DialogTrigger render={<Button variant="outline" />}>
+              Compare scenarios
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
               <DialogHeader>

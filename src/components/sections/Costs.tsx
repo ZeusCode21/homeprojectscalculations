@@ -208,7 +208,7 @@ export function Costs() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <Label className="flex-1">
-                A plan's launch month also sells to users already active
+                A plan&apos;s launch month also sells to users already active
               </Label>
               <Switch
                 checked={scenario.set.launchSell}

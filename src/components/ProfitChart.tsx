@@ -4,9 +4,17 @@ import { SimRow, formatUsd, formatNum } from '@/lib/model';
 
 interface ProfitChartProps {
   rows: SimRow[];
+  title?: string;
+  subtitle?: string;
+  lineLabel?: string;
 }
 
-export function ProfitChart({ rows }: ProfitChartProps) {
+export function ProfitChart({
+  rows,
+  title = 'Profit and active users',
+  subtitle = 'Bars = monthly profit. Line = active users.',
+  lineLabel = 'Active users',
+}: ProfitChartProps) {
   if (rows.length === 0) return null;
   
   const W = 1000;
@@ -19,12 +27,28 @@ export function ProfitChart({ rows }: ProfitChartProps) {
   const maxM = Math.max(1, ...rows.map(r => r.mau));
   
   return (
-    <div className="bg-card border rounded-lg p-4">
-      <h3 className="font-serif text-lg mb-4">Profit by month</h3>
+    <div className="bg-card border rounded-lg p-5 sm:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+        <div>
+          <h3 className="font-serif text-lg">{title}</h3>
+          <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-success" /> Above water
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-sm bg-danger" /> Below
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-4 h-0.5 bg-primary" /> {lineLabel}
+          </span>
+        </div>
+      </div>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-auto"
-        style={{ maxHeight: '300px' }}
+        style={{ maxHeight: '280px' }}
       >
         {/* Zero line */}
         <line
@@ -51,7 +75,7 @@ export function ProfitChart({ rows }: ProfitChartProps) {
                 fill={r.profit >= 0 ? '#1f7a3f' : '#b3261e'}
                 opacity={0.8}
               >
-                <title>Month {r.m}: {formatUsd(r.profit)}</title>
+                <title>{`Month ${r.m}: ${formatUsd(r.profit)}`}</title>
               </rect>
               <text
                 x={pad + i * bw + bw / 2}
@@ -87,9 +111,6 @@ export function ProfitChart({ rows }: ProfitChartProps) {
           -{formatUsd(maxP)}
         </text>
       </svg>
-      <p className="text-xs text-muted-foreground mt-2">
-        Bars: monthly profit (green above water, red below). Line: active users (right scale).
-      </p>
     </div>
   );
 }

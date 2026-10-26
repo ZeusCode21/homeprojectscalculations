@@ -101,6 +101,54 @@ export interface Actuals {
   plan: Record<string, (number | '')[]>;
 }
 
+/** How strong the signal is for want / use / pay while testing an offer. */
+export type SignalStrength = 'unknown' | 'weak' | 'mixed' | 'strong';
+
+export interface TestSignals {
+  want: SignalStrength;
+  use: SignalStrength;
+  pay: SignalStrength;
+  notes: string;
+}
+
+/** Learning log for one plan — treated as a test offer, not a public launch. */
+export interface OfferLearning {
+  planId: string;
+  /** 0–100 how far the test product is built */
+  progress: number;
+  progressNote: string;
+  buildingWithUsers: string;
+  userData: string;
+  testing: string;
+  signals: TestSignals;
+}
+
+export interface Problem {
+  id: string;
+  name: string;
+  blurb: string;
+  /** Plan ids that are test offers for this problem */
+  offerPlanIds: string[];
+}
+
+export interface JourneyPhase {
+  id: string;
+  name: string;
+  startMonth: number;
+  endMonth: number;
+  note: string;
+}
+
+/**
+ * Problem → test-offer journey. Phases are the editable story of the roadmap
+ * (test market first; "launch" only after validation).
+ */
+export interface Learning {
+  phases: JourneyPhase[];
+  problems: Problem[];
+  offers: Record<string, OfferLearning>;
+}
+
 export interface Scenario {
   months: number;
   fwd: boolean;
@@ -112,6 +160,183 @@ export interface Scenario {
   lead: ContractorLeads;
   grid: MonthGrid;
   act: Actuals;
+  learning: Learning;
+}
+
+export const SIGNAL_OPTIONS: { value: SignalStrength; label: string }[] = [
+  { value: 'unknown', label: 'Unknown' },
+  { value: 'weak', label: 'Weak' },
+  { value: 'mixed', label: 'Mixed' },
+  { value: 'strong', label: 'Strong' },
+];
+
+export function emptyOfferLearning(planId: string): OfferLearning {
+  return {
+    planId,
+    progress: 0,
+    progressNote: '',
+    buildingWithUsers: '',
+    userData: '',
+    testing: '',
+    signals: { want: 'unknown', use: 'unknown', pay: 'unknown', notes: '' },
+  };
+}
+
+export function defaultLearning(): Learning {
+  return {
+    phases: [
+      {
+        id: 'test',
+        name: 'Test market & offer',
+        startMonth: 1,
+        endMonth: 3,
+        note: 'Build the test product. Talk to users. No public commitment yet.',
+      },
+      {
+        id: 'validate',
+        name: 'Validate',
+        startMonth: 4,
+        endMonth: 6,
+        note: 'Enough signal on want / use / pay to decide if we commit.',
+      },
+      {
+        id: 'launch',
+        name: 'Launch',
+        startMonth: 7,
+        endMonth: 12,
+        note: 'Only after validation — real product, real commitment.',
+      },
+      {
+        id: 'grow',
+        name: 'Grow',
+        startMonth: 13,
+        endMonth: 18,
+        note: 'Scale what worked. Keep learning.',
+      },
+    ],
+    problems: [
+      {
+        id: 'fix',
+        name: 'Fixing something that\'s broken in the house',
+        blurb: 'Something stopped working or needs repair.',
+        offerPlanIds: ['pack'],
+      },
+      {
+        id: 'change',
+        name: 'Changing a current space',
+        blurb: 'Update or improve a room that already exists.',
+        offerPlanIds: [],
+      },
+      {
+        id: 'design',
+        name: 'Designing a new space',
+        blurb: 'Plan how a space should look and work before building.',
+        offerPlanIds: ['plus'],
+      },
+      {
+        id: 'build',
+        name: 'Building a project',
+        blurb: 'Actually build or install the project.',
+        offerPlanIds: ['pass'],
+      },
+    ],
+    offers: {
+      pack: {
+        ...emptyOfferLearning('pack'),
+        progress: 15,
+        progressNote: 'Scratch version to test if people buy credits for small fixes.',
+      },
+      plus: {
+        ...emptyOfferLearning('plus'),
+        progress: 20,
+        progressNote: 'Test product for ongoing design help — not the full launch.',
+      },
+      pass: {
+        ...emptyOfferLearning('pass'),
+        progress: 10,
+        progressNote: 'Test offer for one full build project.',
+      },
+      pro: {
+        ...emptyOfferLearning('pro'),
+        progress: 0,
+        progressNote: 'Later — contractors. Keep off until core offers have signal.',
+      },
+    },
+  };
+}
+
+/** Paint month-grid stage labels from editable journey phases. */
+export function applyPhasesToStages(s: Scenario): void {
+  const N = s.months;
+  const stages = Array(N).fill('');
+  (s.learning?.phases || []).forEach(phase => {
+    const start = Math.max(1, Math.min(N, Math.round(phase.startMonth)));
+    const end = Math.max(start, Math.min(N, Math.round(phase.endMonth)));
+    for (let m = start; m <= end; m++) {
+      stages[m - 1] = phase.name;
+    }
+  });
+  s.grid.stage = stages;
+}
+
+function asSignal(value: unknown): SignalStrength {
+  return SIGNAL_OPTIONS.some(o => o.value === value)
+    ? (value as SignalStrength)
+    : 'unknown';
+}
+
+function clampText(value: unknown, max = 8000): string {
+  return typeof value === 'string' ? value.slice(0, max) : '';
+}
+
+export function ensureLearning(s: Scenario): void {
+  if (!s.learning) {
+    s.learning = defaultLearning();
+  }
+  if (!s.learning.phases?.length) {
+    s.learning.phases = defaultLearning().phases;
+  }
+  if (!s.learning.problems?.length) {
+    s.learning.problems = defaultLearning().problems;
+  }
+  s.learning.offers = s.learning.offers || {};
+  s.plans.forEach(p => {
+    const existing = s.learning.offers[p.id];
+    if (!existing) {
+      s.learning.offers[p.id] = emptyOfferLearning(p.id);
+      return;
+    }
+    const rawSignals = existing.signals || ({} as OfferLearning['signals']);
+    existing.planId = p.id;
+    existing.progress = Math.max(0, Math.min(100, Number(existing.progress) || 0));
+    existing.progressNote = clampText(existing.progressNote);
+    existing.buildingWithUsers = clampText(existing.buildingWithUsers);
+    existing.userData = clampText(existing.userData);
+    existing.testing = clampText(existing.testing);
+    existing.signals = {
+      want: asSignal(rawSignals.want),
+      use: asSignal(rawSignals.use),
+      pay: asSignal(rawSignals.pay),
+      notes: clampText(rawSignals.notes),
+    };
+  });
+  // Clamp phase months to scenario length
+  s.learning.phases.forEach(ph => {
+    ph.name = clampText(ph.name, 120) || 'Phase';
+    ph.note = clampText(ph.note, 500);
+    ph.startMonth = Math.max(1, Math.min(s.months, Math.round(Number(ph.startMonth) || 1)));
+    ph.endMonth = Math.max(
+      ph.startMonth,
+      Math.min(s.months, Math.round(Number(ph.endMonth) || ph.startMonth))
+    );
+  });
+  s.learning.problems.forEach(problem => {
+    problem.name = clampText(problem.name, 200) || 'Problem';
+    problem.blurb = clampText(problem.blurb, 500);
+    problem.offerPlanIds = (problem.offerPlanIds || []).filter(id =>
+      s.plans.some(p => p.id === id)
+    );
+  });
 }
 
 // Helper to create arrays
@@ -152,7 +377,9 @@ export const DEFAULT_SCENARIO: Scenario = {
   lead: { on: true, start: 12, min: 5000, req: 1, sold: 50, price: 25 },
   costs: [{ id: "base", name: "Hosting + tools (Vercel, Supabase, domain, Apple)" }],
   grid: {
-    stage: fillArr(18, m => m < 3 ? "Launch: organic only" : m < 6 ? "Validate: 1 creator" : m < 12 ? "Grow" : "Scale"),
+    stage: fillArr(18, m =>
+      m < 4 ? 'Test market & offer' : m < 7 ? 'Validate' : m < 13 ? 'Launch' : 'Grow'
+    ),
     ch: {
       org: fillArr(18, () => 0),
       seo: fillArr(18, () => 0),
@@ -165,7 +392,8 @@ export const DEFAULT_SCENARIO: Scenario = {
       base: fillArr(18, () => 150)
     }
   },
-  act: { ch: {}, plan: {} }
+  act: { ch: {}, plan: {} },
+  learning: defaultLearning(),
 };
 
 // Initialize actuals for a scenario
@@ -211,6 +439,7 @@ export function normalizeScenario(s: Scenario): void {
   });
   
   initializeActuals(s);
+  ensureLearning(s);
 }
 
 // Calculate blended payment fee
@@ -587,8 +816,6 @@ export const NEW_LEAD_SOURCE_DEFAULTS: Record<LeadSourceKind, Partial<LeadSource
 
 // Calculate "what it takes" to hit target
 export function whatItTakes(c: LeadSource, cps: number, target: number): string {
-  const K = LEAD_SOURCE_KINDS[c.kind];
-  
   if (!c.on) return 'off';
   if (!isFinite(cps)) return 'No sign-ups yet; add spend in month plan';
   if (cps <= target) return 'Already at or under target';

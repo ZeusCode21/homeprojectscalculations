@@ -20,7 +20,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'bg-card border rounded-lg p-4',
+        'bg-card border rounded-lg p-4 motion-safe:transition-[border-color,box-shadow,transform] motion-safe:duration-150 hover:shadow-sm hover:border-primary/35 motion-safe:hover:-translate-y-0.5',
         variant === 'primary' && 'border-primary',
         className
       )}

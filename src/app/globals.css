@@ -107,6 +107,23 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
   }
+
+  /* Shared interactive feel for native buttons/links that don't use <Button> */
+  a[href],
+  button:not([data-slot="button"]) {
+    @apply motion-safe:transition-[color,background-color,border-color,box-shadow,transform,opacity] motion-safe:duration-150 motion-safe:ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer utilities {
@@ -130,5 +147,30 @@
   }
   .bg-danger-light {
     background-color: var(--color-danger-light);
+  }
+
+  .interactive-lift {
+    @apply motion-safe:transition-[transform,box-shadow,background-color,border-color,color] motion-safe:duration-150 motion-safe:ease-out motion-safe:hover:-translate-y-0.5 hover:shadow-sm active:translate-y-px active:scale-[0.99];
+  }
+
+  .page-enter {
+    animation: page-enter 220ms ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-enter {
+      animation: none;
+    }
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

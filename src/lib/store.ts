@@ -36,8 +36,8 @@ export interface AppState {
 
 const STORE_KEY = 'growthModelV1';
 
-// Create default businesses
-function createDefaultState(): AppState {
+// Create default businesses (also used for SSR / first client paint so hydration matches)
+export function createDefaultState(): AppState {
   const homeProjectsScenario = clone(DEFAULT_SCENARIO);
   normalizeScenario(homeProjectsScenario);
   
@@ -136,11 +136,17 @@ export function createScenario(state: AppState, name: string): AppState {
   const newState = clone(state);
   const business = newState.businesses[state.currentBusiness];
   const currentScenario = business.scenarios[business.currentScenario];
-  const newId = uid();
-  business.scenarios[newId] = {
-    ...clone(currentScenario),
-    // Keep a reference to the name in a custom field
-  };
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40);
+  let newId = slug || uid();
+  if (business.scenarios[newId]) {
+    newId = `${newId}-${uid().slice(-4)}`;
+  }
+  business.scenarios[newId] = clone(currentScenario);
   business.currentScenario = newId;
   return newState;
 }
@@ -275,8 +281,13 @@ function formatScenarioName(id: string): string {
   if (id.startsWith('imported-')) {
     return 'Imported ' + id.slice(9, 13);
   }
-  if (id.startsWith('x')) {
+  if (id.startsWith('x') && /^x[a-z0-9]+$/i.test(id)) {
     return 'Scenario ' + id.slice(1, 5);
   }
-  return id;
+  // Slug ids from save-as: turn "aggressive-ugc" into "Aggressive ugc"
+  return id
+    .split('-')
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }

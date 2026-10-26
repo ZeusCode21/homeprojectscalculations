@@ -67,7 +67,7 @@ export function MonthGrid() {
       <h2 className="font-serif text-2xl mb-2">Month by month</h2>
       <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
         Your spend on each lead source and each running cost, month by month.
-        With "Change later months too" on, typing a number fills every month after it.
+        With &quot;Change later months too&quot; on, typing a number fills every month after it.
         Turn it off to change one month only. The stage row names each stretch on the roadmap.
       </p>
       
